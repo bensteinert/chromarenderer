@@ -1,6 +1,8 @@
-apply plugin: 'cpp'
+project(":chroma-cpp") {
+    apply plugin: 'cpp'
 
-libraries {
-    main {}
+    libraries {
+        chroma {}
+    }
+
 }
-
