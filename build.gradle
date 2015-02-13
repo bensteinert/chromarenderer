@@ -1,14 +1,35 @@
-project(":chroma-cpp") {
-    apply plugin: 'cpp'
+apply plugin: 'cpp'
 
-    libraries {
-        chroma {
-            binaries.all {
-                if (toolChain in Gcc) {
-                    cppCompiler.args "-O3", "-march=native", "-Wa,-q"
-                }
+libraries {
+    hayai {}
+}
+
+executables {
+    benchmarks {
+        binaries.all {
+            lib libraries.hayai.static
+        }
+    }
+}
+
+sources {
+    hayai {
+        cpp {
+            source {
+                srcDir "lib/hayai/src"
+                include "*.cpp"
+            }
+            exportedHeaders {
+                srcDir "lib/hayai/src"
+                include "*.hpp"
             }
         }
     }
+}
 
+import org.apache.tools.ant.taskdefs.condition.Os
+
+task runBenchmarks(type:Exec, dependsOn: 'assemble') {
+    workingDir './build/binaries/benchmarksExecutable'
+    commandLine Os.isFamily(Os.FAMILY_WINDOWS) ? 'benchmarks.exe' : './benchmarks'
 }
