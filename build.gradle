@@ -1,35 +1,38 @@
 apply plugin: 'cpp'
 
-libraries {
-    hayai {}
-}
-
-executables {
-    benchmarks {
-        binaries.all {
-            lib libraries.hayai.static
-        }
-    }
-}
-
-sources {
-    hayai {
-        cpp {
-            source {
-                srcDir "lib/hayai/src"
-                include "*.cpp"
+model {
+    components {
+        hayai(NativeLibrarySpec) {
+            sources {
+                cpp {
+                    source {
+                        srcDir "lib/hayai/src"
+                        include "*.cpp"
+                    }
+                    exportedHeaders {
+                        srcDir "lib/hayai/src"
+                        include "*.hpp"
+                    }
+                }
             }
-            exportedHeaders {
-                srcDir "lib/hayai/src"
-                include "*.hpp"
+        }
+
+        benchmarks(NativeExecutableSpec) {
+            binaries.all {
+                lib library: 'hayai', linkage: 'static'
             }
         }
     }
 }
+
 
 import org.apache.tools.ant.taskdefs.condition.Os
 
-task runBenchmarks(type:Exec, dependsOn: 'assemble') {
+task runBenchmarks(type: Exec, dependsOn: ':assemble') {
     workingDir './build/binaries/benchmarksExecutable'
     commandLine Os.isFamily(Os.FAMILY_WINDOWS) ? 'benchmarks.exe' : './benchmarks'
 }
+
+
+
+
