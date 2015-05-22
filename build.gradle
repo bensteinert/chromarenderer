@@ -2,36 +2,16 @@ apply plugin: 'cpp'
 
 model {
     components {
-        hayai(NativeLibrarySpec) {
-            sources {
-                cpp {
-                    source {
-                        srcDir "lib/hayai/src"
-                        include "*.cpp"
-                    }
-                    exportedHeaders {
-                        srcDir "lib/hayai/src"
-                        include "*.hpp"
-                    }
-                }
-            }
-        }
-
-        benchmarks(NativeExecutableSpec) {
+        chromarenderer(NativeLibrarySpec) {
             binaries.all {
-                lib library: 'hayai', linkage: 'static'
+                if (toolChain in Gcc) {
+                    cppCompiler.args "-O3", "-march=native", "-Wa,-q"
+                }
             }
         }
     }
 }
 
-
-import org.apache.tools.ant.taskdefs.condition.Os
-
-task runBenchmarks(type: Exec, dependsOn: ':assemble') {
-    workingDir './build/binaries/benchmarksExecutable'
-    commandLine Os.isFamily(Os.FAMILY_WINDOWS) ? 'benchmarks.exe' : './benchmarks'
-}
 
 
 
