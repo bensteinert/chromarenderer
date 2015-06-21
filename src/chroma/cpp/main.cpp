@@ -3,6 +3,7 @@
 #include <iostream>
 #include <getopt.h>
 #include <cmath>
+#include <SDL/SDL.h>
 
 #include "Chroma.h"
 #include "Scene.h"
