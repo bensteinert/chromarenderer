@@ -2,7 +2,14 @@ apply plugin: 'cpp'
 
 model {
     components {
-        chroma(NativeLibrarySpec) {
+        chromalib(NativeLibrarySpec) {
+            binaries.all {
+                if (toolChain in Gcc) {
+                    cppCompiler.args "-O3", "-march=native", "-Wa,-q"
+                }
+            }
+        }
+        chroma(NativeExecutableSpec) {
             binaries.all {
                 if (toolChain in Gcc) {
                     cppCompiler.args "-O3", "-march=native", "-Wa,-q"

@@ -18,6 +18,8 @@ SET(SOURCE_FILES
     src/chroma/cpp/SunSky.cpp
     src/chroma/cpp/NextEventEstimatorLight.cpp
     src/chroma/cpp/Fibonacci.cpp
+    src/chroma/cpp/Fibonacci.cpp
     )
 
-ADD_LIBRARY(chroma2 ${SOURCE_FILES})
+ADD_LIBRARY(chroma2-lib ${SOURCE_FILES})
+ADD_EXECUTABLE (chroma2 ${SOURCE_FILES} src/chroma/cpp/main.cpp)
