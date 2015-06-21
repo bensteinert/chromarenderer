@@ -2,11 +2,12 @@
 #define TRIANGLE_H_
 
 #include "Vector3.h"
+#include "Primitive.h"
 
 class Ray;
 class Hitpoint;
 
-class Triangle {
+class Triangle : public Primitive {
 public:
     Vector3 p0, p1, p2;
     Vector3 n;

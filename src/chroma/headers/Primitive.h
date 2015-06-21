@@ -21,7 +21,7 @@ public:
 
     Primitive();
 
-    Primitive(Material *inMat_in, bool closedPrimitive, Material *outMat_in = &stdAir);
+    Primitive(Material *inMat_in, bool closedPrimitive, Material *outMat_in);
 
     virtual ~Primitive();
 

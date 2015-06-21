@@ -1,8 +1,8 @@
 #include <float.h>
+
+#include "Chroma.h"
 #include "Vector3.h"
 #include "Ray.h"
-
-#define EPS (0.00001f)
 
 
 Ray::Ray(const Vector3 &origin, const Vector3 &direction, const float tMin, const float tMax) :

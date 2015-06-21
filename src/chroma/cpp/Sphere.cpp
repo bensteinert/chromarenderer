@@ -9,19 +9,19 @@
 
 
 Sphere::Sphere() :
-        Primitive(&stdDiffuse, true), center(Vector3(0, 0, 0)), radius(0.0f) {
+        Primitive(&stdDiffuse, true, &stdAir), center(Vector3(0, 0, 0)), radius(0.0f) {
     area = 0.0f;
 }
 
 
 Sphere::Sphere(float coords[4], Material *mat_in) :
-        Primitive(mat_in, true), center(coords), radius(coords[3]) {
+        Primitive(mat_in, true, &stdAir), center(coords), radius(coords[3]) {
     area = getArea();
 }
 
 
 Sphere::Sphere(const Vector3 &c, const float rad, Material *mat_in) :
-        Primitive(mat_in, true), center(c), radius(rad) {
+        Primitive(mat_in, true, &stdAir), center(c), radius(rad) {
     area = getArea();
 }
 
