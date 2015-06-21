@@ -12,6 +12,11 @@ SET(SOURCE_FILES
     src/chroma/cpp/Sphere.cpp
     src/chroma/cpp/Hitpoint.cpp
     src/chroma/cpp/Ray.cpp
+    src/chroma/cpp/BVHNode.cpp
+    src/chroma/cpp/BVHTree.cpp
+    src/chroma/cpp/Scene.cpp
+    src/chroma/cpp/SunSky.cpp
+    src/chroma/cpp/NextEventEstimatorLight.cpp
     src/chroma/cpp/Fibonacci.cpp
     )
 

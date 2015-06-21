@@ -9,6 +9,7 @@ class Material;
 
 
 class Sphere : public Primitive {
+
 public:
 
     Vector3 center;
@@ -18,9 +19,9 @@ public:
 
     ~Sphere();
 
-    Sphere(float coords[4], Material *mat_in = &stdDiffuse);
+    Sphere(float coords[4], Material *mat_in);
 
-    Sphere(const Vector3 &c, const float rad, Material *mat_in = &stdDiffuse);
+    Sphere(const Vector3 &c, const float rad, Material *mat_in);
 
     float getArea() const;
 

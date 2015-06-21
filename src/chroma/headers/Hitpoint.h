@@ -3,11 +3,14 @@
 
 #include <cfloat>
 
-class Vector3;
+#include "Vector3.h"
+#include "Primitive.h"
 
 class Hitpoint {
 
 public:
+
+    Hitpoint(Vector3 position, Vector3 normal, Primitive *index);
 
     Vector3 p;                // position
     Vector3 n;
@@ -16,6 +19,7 @@ public:
     bool hit;
     bool flipped;
     mutable bool inside;
+    const Primitive* index; // index of hit Primitive
     float dist;
     float u;
     float v;

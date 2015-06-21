@@ -7,6 +7,9 @@
 #include <cfloat>
 #include <cassert>
 
+#include "Vector3.h"
+#include "Ray.h"
+
 
 class BoundingBox {
 
@@ -16,9 +19,7 @@ public:
 
     BoundingBox() : pMin(Vector3(FLT_MAX, FLT_MAX, FLT_MAX)), pMax(Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX)) { };
 
-
     BoundingBox(const Vector3 &min, const Vector3 &max) : pMin(min), pMax(max) { };
-
 
     ~BoundingBox() { };
 

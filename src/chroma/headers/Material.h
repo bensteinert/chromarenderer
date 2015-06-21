@@ -2,6 +2,8 @@
 #define _MATERIAL_H_
 
 
+#include "Vector3.h"
+
 class Hitpoint;
 
 
