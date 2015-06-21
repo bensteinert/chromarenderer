@@ -4,8 +4,7 @@
 
 
 Triangle::Triangle() :
-        p0(Vector3()), p1(Vector3()), p2(Vector3()),
-        n(Vector3()) {
+        p0(Vector3()), p1(Vector3()), p2(Vector3()), n(Vector3()) {
 }
 
 

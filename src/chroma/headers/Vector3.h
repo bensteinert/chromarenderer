@@ -367,6 +367,11 @@ inline Vector3 mirror(const Vector3 &dir, const Vector3 &mirror_Vec) {
 //}
 
 
+static const Vector3 V3ONE = Vector3(1,1,1);
+static const Vector3 V3ZERO = Vector3(0,0,0);
+static const Vector3 V3ZAXIS = Vector3(0,0,1);
+
+
 #endif
 
 

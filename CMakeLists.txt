@@ -6,6 +6,7 @@ INCLUDE_DIRECTORIES(src/chroma/headers)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native")
 SET(SOURCE_FILES
     src/chroma/cpp/Sampler.cpp
+    src/chroma/cpp/Material.cpp
     src/chroma/cpp/Primitive.cpp
     src/chroma/cpp/Triangle.cpp
     src/chroma/cpp/Sphere.cpp
@@ -14,4 +15,4 @@ SET(SOURCE_FILES
     src/chroma/cpp/Fibonacci.cpp
     )
 
-ADD_LIBRARY(chroma2 ${SOURCE_FILES} src/chroma/headers/ThreadLocal.h src/chroma/headers/Chroma.h)
+ADD_LIBRARY(chroma2 ${SOURCE_FILES})
