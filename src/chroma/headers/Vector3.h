@@ -2,6 +2,7 @@
 #define __VECTOR3_H__
 
 #include <cmath>
+#include <iostream>
 
 class Vector3 {
 public:
@@ -143,15 +144,15 @@ public:
 
     friend inline Vector3 operator+(const Vector3 &lhs, const Vector3 &rhs) {
         return Vector3(lhs.data[0] + rhs.data[0],
-                lhs.data[1] + rhs.data[1],
-                lhs.data[2] + rhs.data[2]);
+                       lhs.data[1] + rhs.data[1],
+                       lhs.data[2] + rhs.data[2]);
     }
 
 
     friend inline Vector3 operator-(const Vector3 &lhs, const Vector3 &rhs) {
         return Vector3(lhs.data[0] - rhs.data[0],
-                lhs.data[1] - rhs.data[1],
-                lhs.data[2] - rhs.data[2]);
+                       lhs.data[1] - rhs.data[1],
+                       lhs.data[2] - rhs.data[2]);
     }
 
 
@@ -170,53 +171,54 @@ public:
     }
 
 
-    friend inline Vector3 operator^(const Vector3 &lhs, const Vector3 &rhs) { // component-wise product (Vector3 * Vector3)
+    friend inline Vector3 operator^(const Vector3 &lhs,
+                                    const Vector3 &rhs) { // component-wise product (Vector3 * Vector3)
         return Vector3(lhs.data[0] * rhs.data[0],
-                lhs.data[1] * rhs.data[1],
-                lhs.data[2] * rhs.data[2]);
+                       lhs.data[1] * rhs.data[1],
+                       lhs.data[2] * rhs.data[2]);
     }
 
 
     friend inline Vector3 operator%(const Vector3 &lhs, const Vector3 &rhs) { // cross product (Vector3 x Vector3)
         return Vector3(lhs.data[1] * rhs.data[2] - lhs.data[2] * rhs.data[1],
-                lhs.data[2] * rhs.data[0] - lhs.data[0] * rhs.data[2],
-                lhs.data[0] * rhs.data[1] - lhs.data[1] * rhs.data[0]);
+                       lhs.data[2] * rhs.data[0] - lhs.data[0] * rhs.data[2],
+                       lhs.data[0] * rhs.data[1] - lhs.data[1] * rhs.data[0]);
     }
 
 
     friend inline Vector3 operator*(float alpha, const Vector3 &v) { // scalar multiplication (float * Vector3)
         return Vector3(alpha * v.data[0],
-                alpha * v.data[1],
-                alpha * v.data[2]);
+                       alpha * v.data[1],
+                       alpha * v.data[2]);
     }
 
 
     friend inline Vector3 operator*(const Vector3 &v, float alpha) { // scalar multiplication (Vector3 * float)
         return Vector3(alpha * v.data[0],
-                alpha * v.data[1],
-                alpha * v.data[2]);
+                       alpha * v.data[1],
+                       alpha * v.data[2]);
     }
 
 
     friend inline Vector3 operator/(const Vector3 &lhs, const Vector3 &rhs) { // (Vector3 / Vector3)
         return Vector3(lhs.data[0] / rhs.data[0],
-                lhs.data[1] / rhs.data[1],
-                lhs.data[2] / rhs.data[2]);
+                       lhs.data[1] / rhs.data[1],
+                       lhs.data[2] / rhs.data[2]);
     }
 
 
     friend inline Vector3 operator/(const Vector3 &v, float alpha) { // (Vector3 / alpha)
         return Vector3(v.data[0] / alpha,
-                v.data[1] / alpha,
-                v.data[2] / alpha);
+                       v.data[1] / alpha,
+                       v.data[2] / alpha);
     }
 
 
     friend inline double HPrecDot(const Vector3 &lhs, const Vector3 &rhs) {
 
         return (double) lhs.data[0] * (double) rhs.data[0] +
-                (double) lhs.data[1] * (double) rhs.data[1] +
-                (double) lhs.data[2] * (double) rhs.data[2];
+               (double) lhs.data[1] * (double) rhs.data[1] +
+               (double) lhs.data[2] * (double) rhs.data[2];
     }
 
 
@@ -311,6 +313,11 @@ public:
         v.data[2] = fabsf(v.data[2]);
         return v;
     }
+
+    friend std::ostream &operator<<(std::ostream &os, const Vector3 &v) {
+        os << v.data[0] << "," << v.data[1] << "," << v.data[2];
+        return os;
+    }
 };
 
 
@@ -334,15 +341,14 @@ inline Vector3 minVector(const Vector3 &v1, const Vector3 &v2) {
 
 
 inline Vector3 maxVector(const Vector3 &v1, const Vector3 &v2) {
-
     Vector3 result;
-
     result[0] = fmaxf(v1[0], v2[0]);
     result[1] = fmaxf(v1[1], v2[1]);
     result[2] = fmaxf(v1[2], v2[2]);
 
     return result;
 }
+
 
 
 inline Vector3 mirror(const Vector3 &dir, const Vector3 &mirror_Vec) {

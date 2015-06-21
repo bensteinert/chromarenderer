@@ -1,16 +1,13 @@
-project(":chroma-cpp") {
-    apply plugin: 'cpp'
+apply plugin: 'cpp'
 
-    model {
-        components {
-            chroma(NativeLibrarySpec) {
-                binaries.all {
-                    if (toolChain in Gcc) {
-                        cppCompiler.args "-O3", "-march=native", "-Wa,-q"
-                    }
+model {
+    components {
+        chroma(NativeLibrarySpec) {
+            binaries.all {
+                if (toolChain in Gcc) {
+                    cppCompiler.args "-O3", "-march=native", "-Wa,-q"
                 }
             }
         }
     }
-
 }
