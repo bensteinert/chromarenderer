@@ -11,7 +11,6 @@
 
 #include <math.h>
 #include <stdio.h>
-#include <SDL/SDL.h>
 
 /**
  * This class is the base class for a canvas in which the RayTracer can

@@ -9,7 +9,7 @@
 #include <SDL/SDL.h>
 
 #include "AbstractRenderCanvas.h"
-
+#include "Image.h"
 
 class SDLEventConsumer {
 public:

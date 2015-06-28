@@ -4,6 +4,7 @@
 #include <getopt.h>
 #include <cmath>
 #include <SDL/SDL.h>
+#include <SDLRenderCanvas.h>
 
 #include "Chroma.h"
 #include "Scene.h"
@@ -164,7 +165,8 @@ int main(int argc, char **argv) {
     // TODO
 
     /*SDL Setup*/
-    // TODO
+    SDLRenderCanvas canvas = SDLRenderCanvas(xres, yres+80, false, true);
+    canvas.Initialize();
 
     /*Main loop*/
     // TODO
