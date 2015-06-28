@@ -41,7 +41,6 @@ bool Image::saveHDR(const char path[]) const {
 
 
 bool Image::saveTonemapped(const char path[]) {
-
     Image &ldr = toneMap();
     if (SaveTGA(path, ldr.pixels, ldr.width, ldr.height)) {
         delete &ldr;
@@ -146,6 +145,4 @@ void inline Image::convertXYZtoRGB(Image &dest_img) {
 
 void inline Image::clear() {
     memset(pixels, 0, width * height * sizeof(Vector3));
-    //for(int i=0; i<width*height;i++)
-    //	pixels[i] = Vector3(0,0,0);
 }
