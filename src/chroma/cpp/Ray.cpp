@@ -20,6 +20,6 @@ Ray::Ray() :
 }
 
 
-Vector3 Ray::at(const float t) {
+Vector3 Ray::at(const float t) const {
     return origin + t * direction;
 }

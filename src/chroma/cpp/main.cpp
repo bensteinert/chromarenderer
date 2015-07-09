@@ -3,9 +3,9 @@
 #include <iostream>
 #include <getopt.h>
 #include <cmath>
-#include <SDL/SDL.h>
 #include <SDLRenderCanvas.h>
-
+#include <SDL/SDL.h>
+#include <Sampler.h>
 #include "Chroma.h"
 #include "Scene.h"
 
@@ -449,40 +449,25 @@ void SDLRenderCanvas::HandleEvents() {
 
 int main(int argc, char **argv) {
 
-    /*read input*/
-    //sceneName = "plq";
-    sceneName = "cornelldiamond";
-    //sceneName = "chess";
-    //sceneName = "dispersionprism";
-    //sceneName = "conference";
-    //sceneName = "chess";
+    Sampler* globalSampler = new Sampler();
+    globalSampler->init(13499);
 
-    //lensName = "kimura_wideangle";
-    //lensName = "mitsuaki_fisheye";
-    //lensName = "miyamoto_fisheye";
-    //lensName = "muller_fisheye";
-    lensName = "tessar_brendel";
-    //lensName = "momiyama_tele";
-    //lensName = "momiyama_wideangle";
-    //lensName = "mori_wideangle";
-    //lensName = "pinhole";
-    //lensName = "petzval";
-    //lensName = "single_frontAP";
-    //lensName = "rosier_gauss";
+    /*read input*/
+    sceneName = "cornelldiamond";
 
     xres = 1600;
     yres = 1050;
-    camType = 2;
-    method = 1;
-    //fl=10.0f;
-    //pathDepth=0;
-    //pupilMode=true;
 
     parseArgs(argc, argv);
 
     /*Scene Setup*/
     scene = new Scene(sceneName);
     scene->setupAccStruct(heuristic, 0);
+
+    /*Camera Setup*/
+    //thCam = new ThinLensCamera(sceneName,xres,yres,sensitivity);
+    //thCam->setStop((thCam->focalDist/2.8)*0.5f);
+
 
     /*Kernel Setup*/
     // TODO

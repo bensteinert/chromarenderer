@@ -2,6 +2,7 @@
 #define CHROMASTRUCTS_H
 
 #include "Vector3.h"
+#include "Defines.h"
 
 class Primitive;
 
@@ -9,7 +10,7 @@ typedef struct{
     float radius;;
     Vector3 center;
     float area;
-} pupil;
+} Pupil;
 
 typedef struct{
     Vector3 position;

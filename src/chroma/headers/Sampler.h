@@ -4,6 +4,7 @@
 #include "mtrand.h"
 
 class Vector3;
+class Hitpoint;
 
 
 class Sampler {

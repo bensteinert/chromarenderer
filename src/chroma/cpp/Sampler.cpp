@@ -9,7 +9,6 @@
 #include "Hitpoint.h"
 #include "Sampler.h"
 
-
 Sampler::Sampler() { }
 
 

@@ -14,8 +14,6 @@ public:
     Triangle();
     ~Triangle();
     Triangle(float coords[9], Material *mat_in);
-    Triangle(const Vector3 &p0, const Vector3 &p1, const Vector3 &p2, Material *insideMat_in);
-    Triangle(float coords[9], Material *mat_in, Material *outsideMat_in);
     Triangle(const Vector3 &p0, const Vector3 &p1, const Vector3 &p2, Material *insideMat_in, Material *outsideMat_in);
 
     void getBoundingBox(BoundingBox &bb) const;

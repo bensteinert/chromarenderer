@@ -5,12 +5,15 @@
 #include "Structs.h"
 
 class Material;
+class Sampler;
 
 extern Material stdDiffuse;
 extern Material stdMirr;
 extern Material stdNull;
 extern Material stdAir;
 extern Material lightSensing;
+
+extern Sampler* globalSampler;
 
 static const char scene_path[] = "./scenes/";
 static const char lens_path[] = "./lenses/";

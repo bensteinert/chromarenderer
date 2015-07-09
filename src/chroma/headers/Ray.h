@@ -16,7 +16,7 @@ public:
 
     Ray(const Vector3 &origin, const Vector3 &direction, const float tMin, const float tMax);
 
-    Vector3 at(const float t);
+    Vector3 at(const float t) const;
 
 };
 

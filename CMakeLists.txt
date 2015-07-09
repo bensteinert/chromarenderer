@@ -20,6 +20,7 @@ SET(SOURCE_FILES
     src/chroma/cpp/Primitive.cpp
     src/chroma/cpp/Triangle.cpp
     src/chroma/cpp/Sphere.cpp
+    src/chroma/cpp/Disk.cpp
     src/chroma/cpp/Hitpoint.cpp
     src/chroma/cpp/Ray.cpp
     src/chroma/cpp/BVHNode.cpp
@@ -31,6 +32,8 @@ SET(SOURCE_FILES
     src/chroma/cpp/AbstractRenderCanvas.cpp
     src/chroma/cpp/SDLRenderCanvas.cpp
     src/chroma/cpp/Image.cpp
+    src/chroma/cpp/Aperture.cpp
+    src/chroma/cpp/AccumulationBuffer.cpp
     )
 
 ADD_LIBRARY(chroma2-lib ${SOURCE_FILES})
