@@ -13,7 +13,7 @@
 /********************************************************/
 #include <cmath>
 #include <cstdio>
-#include <primitives/Triangle.h>
+#include "Triangle.h"
 
 #define X 0
 #define Y 1

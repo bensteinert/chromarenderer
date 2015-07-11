@@ -42,6 +42,8 @@ public:
 
     bool parse(const std::string &input);
 
+    float SPEgetDiffRefl(const Hitpoint &hit, const float lambda) const;
+
 
 private:
     void verify();
@@ -51,8 +53,6 @@ private:
     void initSellmeierDefault();
 
     Vector3 RGBgetDiffRefl(const Hitpoint &hit) const;
-
-    float SPEgetDiffRefl(const Hitpoint &hit, const float lambda) const;
 
     Vector3 RGBgetSpecRefl(const Hitpoint &hit) const;
 

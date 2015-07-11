@@ -37,6 +37,7 @@ SET(SOURCE_FILES
     src/chroma/cpp/NextEventEstimatorLens.cpp
     src/chroma/cpp/AccumulationBuffer.cpp
     src/chroma/cpp/ThinLensCamera.cpp
+    src/chroma/cpp/Renderer.cpp
     )
 
 ADD_LIBRARY(chroma2-lib ${SOURCE_FILES})

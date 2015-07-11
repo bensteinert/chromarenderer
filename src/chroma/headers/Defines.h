@@ -24,13 +24,13 @@
 #define SVGOUT(v1,v2,l)
 #endif
 
-//#if !defined NOSDL && defined MEASURETIME
-//#define MEASUREBRACKET(expr, timefield) {unsigned int timedelta = SDLTicks(); expr; timefield += SDLTicks() - timedelta;}
-//#define STARTMEASUREMENT unsigned int timedelta = SDLTicks();
-//#define STOPMEASUREMENT(timefield) timefield += SDLTicks() - timedelta;
-//#else
-//#define MEASUREBRACKET(expr,timefield) expr;
-//#endif
+#if !defined NOSDL && defined MEASURETIME
+#define MEASUREBRACKET(expr, timefield) {unsigned int timedelta = SDLTicks(); expr; timefield += SDLTicks() - timedelta;}
+#define STARTMEASUREMENT unsigned int timedelta = SDLTicks();
+#define STOPMEASUREMENT(timefield) timefield += SDLTicks() - timedelta;
+#else
+#define MEASUREBRACKET(expr,timefield) expr;
+#endif
 
 
 
