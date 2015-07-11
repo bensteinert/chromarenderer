@@ -145,7 +145,6 @@ void Disk::getNormal(const Vector3 &dir, Hitpoint &hit) const {
 
 
 void Disk::transform(const Vector3 &translation, const float &scale, const Matrix3x3 &rotation) {
-
     center = (rotation * (scale * center)) + translation;
     normal = rotation * normal;
     radius = radius * scale;

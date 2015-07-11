@@ -33,7 +33,10 @@ SET(SOURCE_FILES
     src/chroma/cpp/SDLRenderCanvas.cpp
     src/chroma/cpp/Image.cpp
     src/chroma/cpp/Aperture.cpp
+    src/chroma/cpp/Camera.cpp
+    src/chroma/cpp/NextEventEstimatorLens.cpp
     src/chroma/cpp/AccumulationBuffer.cpp
+    src/chroma/cpp/ThinLensCamera.cpp
     )
 
 ADD_LIBRARY(chroma2-lib ${SOURCE_FILES})

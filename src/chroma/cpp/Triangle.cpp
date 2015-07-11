@@ -1,4 +1,5 @@
 #include "Chroma.h"
+#include "Matrix3x3.h"
 #include "Triangle.h"
 #include "Material.h"
 #include "Hitpoint.h"
@@ -145,15 +146,13 @@ void Triangle::out(std::ostream &os) const {
 }
 
 
-//void Triangle::transform(const Vector3 &translation, const float &scale, const Matrix3x3 &rotation) {
-//
-//    p0 = rotation * (scale * p0) + translation;
-//    p1 = rotation * (scale * p1) + translation;
-//    p2 = rotation * (scale * p2) + translation;
-//
-//    n = rotation * n;
-//    area = getArea();
-//}
+void Triangle::transform(const Vector3 &translation, const float &scale, const Matrix3x3 &rotation) {
+    p0 = rotation * (scale * p0) + translation;
+    p1 = rotation * (scale * p1) + translation;
+    p2 = rotation * (scale * p2) + translation;
+    n = rotation * n;
+    area = getArea();
+}
 
 
 

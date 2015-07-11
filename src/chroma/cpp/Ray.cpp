@@ -5,8 +5,8 @@
 #include "Ray.h"
 
 
-Ray::Ray(const Vector3 &origin, const Vector3 &direction, const float tMin, const float tMax) :
-        origin(origin), direction(direction), tMin(tMin), tMax(tMax) {
+Ray::Ray(const Vector3 &origin, const Vector3 &direction, const float tMin, const float tMax, const float lambda) :
+        origin(origin), direction(direction), tMin(tMin), tMax(tMax), lambda(lambda) {
 
     invDirection = Vector3(1.0f / direction[0], 1 / direction[1], 1 / direction[2]);
     sign[0] = (invDirection[0] < 0);
@@ -16,7 +16,7 @@ Ray::Ray(const Vector3 &origin, const Vector3 &direction, const float tMin, cons
 
 
 Ray::Ray() :
-        origin(Vector3(0, 0, 0)), direction(Vector3(0, 0, 1)), tMin(EPS), tMax(FLT_MAX){
+        origin(Vector3(0, 0, 0)), direction(Vector3(0, 0, 1)), tMin(EPS), tMax(FLT_MAX), lambda(0) {
 }
 
 

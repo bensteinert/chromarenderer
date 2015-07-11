@@ -30,7 +30,7 @@ public:
 
     float getArea() const;
 
-    //void transform(const Vector3 &translation, const float &scale, const Matrix3x3 &rotation);
+    void transform(const Vector3 &translation, const float &scale, const Matrix3x3 &rotation);
 
     void out(std::ostream &os) const;
 

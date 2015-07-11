@@ -40,6 +40,8 @@ public:
     void getNormal(const Vector3 &dir, Hitpoint &hit) const;
 
     void getBoundingBox(BoundingBox &bb) const;
+
+    void transform(const Vector3 &translation, const float &scale, const Matrix3x3 &rotation);
 };
 
 #endif /*SPHERE_H_*/

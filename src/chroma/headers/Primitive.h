@@ -41,7 +41,7 @@ public:
 
     virtual void getNormal(const Vector3 &dir, Hitpoint &hit) const = 0;
 
-    //virtual void transform(const Vector3 &translation, const float &scale, const Matrix3x3 &rotation);
+    virtual void transform(const Vector3 &translation, const float &scale, const Matrix3x3 &rotation) = 0;
 
 };
 

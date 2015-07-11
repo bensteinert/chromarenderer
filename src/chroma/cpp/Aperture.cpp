@@ -3,6 +3,8 @@
 #include "Aperture.h"
 #include "Hitpoint.h"
 #include "Chroma.h"
+#include "Ray.h"
+#include "BoundingBox.h"
 
 
 
@@ -271,26 +273,27 @@ void Aperture::getNormal(const Vector3 &dir, Hitpoint &hit) const {
 }
 
 
-//void Aperture::transform(const Vector3 &translation, const float &scale, const Matrix3x3 &rotation) {
-//
-//    if (circular) {
-//        circAP.transform(translation, scale, rotation);
-//    }
-//    else {
-//        for (int i = 0; i < numTris; i++) {
-//            tris[i].transform(translation, scale, rotation);
-//        }
-//    }
-//}
+//TODO needed for camera movement?
+void Aperture::transform(const Vector3 &translation, const float &scale, const Matrix3x3 &rotation) {
+
+    if (circular) {
+        circAP.transform(translation, scale, rotation);
+    }
+    else {
+        for (int i = 0; i < numTris; i++) {
+            tris[i].transform(translation, scale, rotation);
+        }
+    }
+}
 
 
 void Aperture::out(std::ostream &os) const {
+    os << "Center: " << center << std::endl << "Radius: " << radius << std::endl <<
+    "#Tris: " << numTris << std::endl << "Area: " << area << std::endl;
 
-    os << "Center: " << center << endl << "Radius: " << radius << endl <<
-    "#Tris: " << numTris << endl << "Area: " << area << endl;
-
-    for (int i = 0; i < numTris; i++)
+    for (int i = 0; i < numTris; i++) {
         tris[i].out(os);
+    }
 }
 
 

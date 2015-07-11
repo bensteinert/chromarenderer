@@ -6,6 +6,8 @@
 #include "Matrix3x3.h"
 #include "BoundingBox.h"
 #include "Triangle.h"
+#include "Disk.h"
+
 
 class Aperture : public Primitive {
 
@@ -50,7 +52,7 @@ public:
 
     void getNormal(const Vector3 &dir, Hitpoint &hit) const;
 
-    //void transform(const Vector3 &translation, const float &scale, const Matrix3x3 &rotation);
+    void transform(const Vector3 &translation, const float &scale, const Matrix3x3 &rotation);
 
     void out(std::ostream &os) const;
 

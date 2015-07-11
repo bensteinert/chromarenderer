@@ -208,7 +208,6 @@ float Sphere::intersectSphere(const Sphere &s) const {
 
 
 float Sphere::getunifdistrSample(Sampler &s, Vector3 &position, Vector3 &normal) const {
-
     double u = (s.genrand_real3() - 0.5) * 2.0;
     double v = s.genrand_real2();
     double sqrtone_u = sqrt(1.0 - u * u); // sin² + cos² = 1 -> sin = sqrt(1-cos²)
@@ -217,4 +216,9 @@ float Sphere::getunifdistrSample(Sampler &s, Vector3 &position, Vector3 &normal)
     position = Vector3(sqrtone_u * cosf(v2pi), sqrtone_u * sinf(v2pi), u);
     normal = (position - center).normalizedCopy();
     return area;
+}
+
+
+void Sphere::transform(const Vector3 &translation, const float &scale, const Matrix3x3 &rotation) {
+    //TODO :)
 }

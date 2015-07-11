@@ -3,16 +3,23 @@
 #include <iostream>
 #include <getopt.h>
 #include <cmath>
-#include <SDLRenderCanvas.h>
 #include <SDL/SDL.h>
-#include <Sampler.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fstream>
+
+#include "SDLRenderCanvas.h"
+#include "Sampler.h"
+#include "ThinLensCamera.h"
 #include "Chroma.h"
 #include "Scene.h"
+#include "AccumulationBuffer.h"
 
 
 //*******************
 
-Image* sdlImage;
+Image *rgbImage;
 bool stop = false;
 bool closeChroma = false;
 bool pupilMode = false;
@@ -29,6 +36,9 @@ float fl = 0.0f; //mm!
 int stopChange = 0;
 
 Scene *scene = 0;
+Camera *camera = 0;
+AccumulationBuffer *sensor = 0;
+SDLRenderCanvas *canvas = 0;
 
 std::string sceneName = "";
 std::string lensName = "";
@@ -44,31 +54,213 @@ int pathDepth = 100;
 int heuristic = 2;
 bool spectral = true;
 
-//Vector3 movement(0,0,0);
-//bool mouseLeft = false;
-//bool keysHeld[323] = {false};
+Vector3 movement(0, 0, 0);
+bool mouseLeft = false;
+bool keysHeld[323] = {false};
 ///*DEBUG VARS*/
 //int dbg = 0;
 //int param = 4;
 //char * title = new char[TEXTOUTPUTLEN];
 //char * titlePart = new  char[30];
-//char * text1 = new char[TEXTOUTPUTLEN];
-//char * text2 = new char[TEXTOUTPUTLEN];
-//char * text3 = new char[TEXTOUTPUTLEN];
-//char * text4 = new char[TEXTOUTPUTLEN];
-//char * text5 = new char[TEXTOUTPUTLEN];
+int textSwitch = 1;
+char *text1 = new char[TEXTOUTPUTLEN];
+char *text2 = new char[TEXTOUTPUTLEN];
+char *text3 = new char[TEXTOUTPUTLEN];
+char *text4 = new char[TEXTOUTPUTLEN];
+char *text5 = new char[TEXTOUTPUTLEN];
+
 //char * logLine = new char[256];
-//long t0,t;
-//time_t start, last, actual;
-//int frames = 0;
-//float fps = 0.0f;
+long t0, t;
+time_t start, last, actual;
+int frames = 0;
+float fps = 0.0f;
 //int saveLimit=1000;
 //int pupilLimit = 250;
-//int textSwitch = 1;
+
 //int debug = 0;
 //float lensTracePercent = 0.0f;
 //float shadingPercent = 0.0f;
 //float traversalPercent = 0.0f;
+
+float fpsMeter() {
+    frames++;
+    actual = clock();
+    float elapsed = (float) (actual - last) / CLOCKS_PER_SEC;
+
+    if (elapsed >= 5.0f) {
+        fps = (float) frames / elapsed;
+        frames = 0;
+        last = clock();
+    }
+    return elapsed;
+}
+
+
+void hdrScreenShot(const Image &img) {
+
+    time_t actual;
+    struct tm *timeinfo;
+    time(&actual);
+    timeinfo = localtime(&actual);
+    std::string path = "./shots/" + sceneName;
+    char suffix[64];
+    snprintf(suffix, 16, "%d_%d%d%d", sensor->acc, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+
+
+    struct stat stBuf;
+    if (stat(path.c_str(), &stBuf) != 0) {
+        // directory does not exist!
+        mkdir(path.c_str(), 0774);
+    }
+
+    path = path + "/" + sceneName + "_" + suffix;
+    std::string::size_type pathLength = path.length();
+
+    path.append(".hdr");
+    img.saveHDR(path.c_str());
+    std::cout << "HDR screenshot saved to " << path << std::endl;
+
+    path.replace(pathLength, 4, ".txt");
+    std::ofstream fs(path.c_str(), ios::out);
+
+    if (fs) {
+        double elapsed = difftime(actual, start) / 60.0;
+        fs << "Date of Render:\t\t" << asctime(timeinfo);
+        fs << "Elapsed time:\t\t" << int(elapsed) << "minutes" << std::endl;
+        fs << "Render Passes:\t\t" << sensor->acc << std::endl;;
+        fs << "Color Mode:\t\t\t" << (spectral ? "Spectral 10" : "RGB") << std::endl;
+        fs << "Render Method:\t\t";
+        switch (method) {
+            case 1:
+                fs << "Rasterization";
+                break;
+            case 2:
+                fs << "Path Tracing";
+                break;
+            case 3:
+                fs << "Path Tracing with Direct Light Estimation";
+                break;
+            case 4:
+                fs << "Light Tracing with Direct Light Estimation";
+                break;
+        }
+        fs << std::endl;
+
+
+        fs << "avg brightness:\t\t" << img.L1Norm() << std::endl;
+        fs << "avg RGB brightness:\t" << img.L1NormRGB() << std::endl;
+        fs << std::endl << "Camera Stats:" << std::endl;
+        fs << *camera << std::endl;
+
+    }
+    fs.close();
+}
+
+
+void writelog(const char *line) {
+    FILE *logfile = fopen("logfile.txt", "at");
+    if (!logfile) {
+        cerr << "Logfile not open!" << std::endl;
+        return;
+    }
+    else fwrite(line, 1, strlen(line), logfile);
+    fclose(logfile);
+}
+
+
+inline void mapDirToDebevecUv(const Vector3 &dir, float &u, float &v) {
+    float r = (1 / PI) * acosf(dir[2]) / sqrt(dir[0] * dir[0] + dir[1] * dir[1]);
+    u = dir[0] * r;
+    v = dir[1] * r;
+    u = (u + 1.0) / 2.0;
+    v = (v + 1.0) / 2.0;
+}
+
+
+inline void flushText() {
+    memset(text1, ' ', TEXTOUTPUTLEN);
+    memset(text2, ' ', TEXTOUTPUTLEN);
+    memset(text3, ' ', TEXTOUTPUTLEN);
+    memset(text4, ' ', TEXTOUTPUTLEN);
+    memset(text5, ' ', TEXTOUTPUTLEN);
+}
+
+
+inline void lensStats() {
+    //snprintf(text1,64,"apertureBlockCount: %d",globalEnv.apertureBlockedRayCount);
+    //snprintf(text2,64,"lensBodyBlockCount: %d",globalEnv.lensBodyHitCount);
+    //snprintf(text1, 64, "positives: %d", globalEnv.positives);
+    //snprintf(text2, 64, "negatives: %d", globalEnv.negatives);
+    //snprintf(text3, 64, "innerReflections:   %d", globalEnv.innerReflectionCount);
+    //snprintf(text4, 64, "total LensRays:   %d", globalEnv.lensRayCount);
+    //snprintf(text5,64,"per frame");
+    //snprintf(text5, 64, "diffracted positives: %d", globalEnv.diffracted);
+}
+
+
+inline void camStats() {
+    camera->stats(text1, text2, text3, text4, text5, TEXTOUTPUTLEN);
+}
+
+
+inline void renderStats(double inv_elapsed_t) {
+    //snprintf(text1, 64, "rays/sec:   %.1f", globalEnv.rayCount * inv_elapsed_t);
+    //snprintf(text2, 64, "visTests/sec:   %.1f", globalEnv.visCount * inv_elapsed_t);
+    snprintf(text4, 64, "L1: %.4f", rgbImage->L1Norm());
+}
+
+
+inline void SDLBlitAndHandle(const Image &img) {
+    switch (textSwitch) {
+        case 1:
+            renderStats(1000.0 / ((double) (SDL_GetTicks() - t0)));
+            break;
+        case 2:
+            camStats();
+            break;
+        case 3:
+            lensStats();
+            break;
+        default:
+            break;
+    }
+
+    canvas->EnterRenderMode();
+    canvas->HandleEvents();
+
+    if (mirrorX) {
+        if (mirrorY) {
+            canvas->blitImage_mirroredXY(img);
+        }
+        else {
+            canvas->blitImage_mirroredX(img);
+        }
+    }
+    else {
+        if (mirrorY) {
+            canvas->blitImage_mirroredY(img);
+        }
+        else {
+            canvas->blitImage(img);
+        }
+    }
+
+    canvas->renderString(text1, 0, yres + 15);
+    canvas->renderString(text2, 0, yres + 30);
+    canvas->renderString(text3, 0, yres + 45);
+    canvas->renderString(text4, 0, yres + 60);
+    canvas->renderString(text5, 0, yres + 75);
+    canvas->LeaveRenderMode("Chroma Renderer");
+}
+
+
+void writeCommands() {
+    printf("F1: rasterize || F2: PT || F3: PTDL || F4:LTDL || F12: Spectral/RGB\n"
+                   "q/a: Stop Up/Down\n"
+                   "w/s: shift sensor backward(+z) / forward\n"
+                   "e/d: increase/decrease EV\n"
+                   "r/f: zoom in/out\n");
+}
 
 
 void parseArgs(int argc, char **argv) {
@@ -125,11 +317,6 @@ void parseArgs(int argc, char **argv) {
 }
 
 
-Vector3 movement(0, 0, 0);
-bool mouseLeft = false;
-bool keysHeld[323] = {false};
-
-
 void SDLRenderCanvas::HandleEvents() {
 
     bool consumed = false;
@@ -184,16 +371,19 @@ void SDLRenderCanvas::HandleEvents() {
                     case SDLK_MINUS:
                         keysHeld[m_Event.key.keysym.sym] = false;
                         break;
-                        //case SDLK_c: cout << cam->pos << " | " << cam->rot[0] << " | " << cam->rot[1] << " | " << cam->rot[2] << endl; break;
+                    case SDLK_c:
+                        std::cout << camera->pos << " | " << camera->rot[0] << " | " << camera->rot[1] << " | " <<
+                        camera->rot[2] << std::endl;
+                        break;
 
                     case SDLK_F10:
-                        //hdrScreenshot(*image);
+                        hdrScreenShot(*rgbImage);
                         break;
 
                     case SDLK_F11:
                         char filename[32];
-                        //snprintf(filename,32,"sensor%d.tga",sensor->acc);
-                        //image->saveTonemapped(filename);
+                        snprintf(filename, 32, "sensor%d.tga", sensor->acc);
+                        rgbImage->saveTonemapped(filename);
                         std::cout << "LDR screeshot saved to " << filename << std::endl;
                         break;
 
@@ -223,14 +413,14 @@ void SDLRenderCanvas::HandleEvents() {
 //                        }
 //                        break;
 
-//                    case SDLK_KP_MINUS:
-//                        cam->superSample(0.5f);
-//                        sensor->clear();
-//                        break;
-//                    case SDLK_KP_PLUS:
-//                        cam->superSample(2.0f);
-//                        sensor->clear();
-//                        break;
+                    case SDLK_KP_MINUS:
+                        camera->superSample(0.5f);
+                        sensor->clear();
+                        break;
+                    case SDLK_KP_PLUS:
+                        camera->superSample(2.0f);
+                        sensor->clear();
+                        break;
                     default:
                         break;
                 }
@@ -269,11 +459,11 @@ void SDLRenderCanvas::HandleEvents() {
                     case SDLK_MINUS:
                         keysHeld[m_Event.key.keysym.sym] = true;
                         break;
-//                    case SDLK_SPACE:
-//                        SDL_WarpMouse(xres / 2, yres / 2);
-//                        cam->reset();
-//                        sensor->clear();
-//                        break;
+                    case SDLK_SPACE:
+                        SDL_WarpMouse(xres / 2, yres / 2);
+                        camera->reset();
+                        sensor->clear();
+                        break;
 
                     case SDLK_y:
                         mirrorY = !mirrorY;
@@ -281,53 +471,53 @@ void SDLRenderCanvas::HandleEvents() {
                     case SDLK_x:
                         mirrorX = !mirrorX;
                         break;
-//                    case SDLK_p:
-//                        textSwitch = 2;
-//                        flushText();
-//                        break;
-//                    case SDLK_o:
-//                        textSwitch = 1;
-//                        flushText();
-//                        break;
-//                    case SDLK_l:
-//                        textSwitch = 3;
-//                        flushText();
-//                        break;
-//                    case SDLK_q:
-//                        cam->stopUp();
-//                        sensor->clear();
-//                        break;
-//                    case SDLK_a:
-//                        cam->stopDown();
-//                        sensor->clear();
-//                        break;
-//                    case SDLK_w:
-//                        if (keysHeld[SDLK_LSHIFT]) cam->sensorZPos += 0.1f;
-//                        else cam->sensorZPos += 0.5f;
-//                        sensor->clear();
-//                        break;
-//                    case SDLK_s:
-//                        if (keysHeld[SDLK_LSHIFT]) cam->sensorZPos -= 0.1f;
-//                        else cam->sensorZPos -= 0.5f;
-//                        sensor->clear();
-//                        break;
-//                    case SDLK_e:
-//                        cam->sensitivity *= 2.0f;
-//                        sensor->clear();
-//                        break;
-//                    case SDLK_d:
-//                        if (cam->sensitivity > EPS * 100.0f) cam->sensitivity *= 0.5f;
-//                        sensor->clear();
-//                        break;
-//                    case SDLK_r:
-//                        cam->zoomRel(2.0f);
-//                        sensor->clear();
-//                        break;
-//                    case SDLK_f:
-//                        cam->zoomRel(0.5f);
-//                        sensor->clear();
-//                        break;
-
+                    case SDLK_p:
+                        textSwitch = 2;
+                        flushText();
+                        break;
+                    case SDLK_o:
+                        textSwitch = 1;
+                        flushText();
+                        break;
+                    case SDLK_l:
+                        textSwitch = 3;
+                        flushText();
+                        break;
+                    case SDLK_q:
+                        camera->stopUp();
+                        sensor->clear();
+                        break;
+                    case SDLK_a:
+                        camera->stopDown();
+                        sensor->clear();
+                        break;
+                    case SDLK_w:
+                        if (keysHeld[SDLK_LSHIFT]) camera->sensorZPos += 0.1f;
+                        else camera->sensorZPos += 0.5f;
+                        sensor->clear();
+                        break;
+                    case SDLK_s:
+                        if (keysHeld[SDLK_LSHIFT]) camera->sensorZPos -= 0.1f;
+                        else camera->sensorZPos -= 0.5f;
+                        sensor->clear();
+                        break;
+                    case SDLK_e:
+                        camera->sensitivity *= 2.0f;
+                        sensor->clear();
+                        break;
+                    case SDLK_d:
+                        if (camera->sensitivity > EPS * 100.0f) camera->sensitivity *= 0.5f;
+                        sensor->clear();
+                        break;
+                    case SDLK_r:
+                        camera->zoomRel(2.0f);
+                        sensor->clear();
+                        break;
+                    case SDLK_f:
+                        camera->zoomRel(0.5f);
+                        sensor->clear();
+                        break;
+//
 //                    case SDLK_F8:
 //                        if (pupilMode) {
 //                            pupilMode = false;
@@ -348,25 +538,23 @@ void SDLRenderCanvas::HandleEvents() {
                 }
                 break;
 
-//            case SDL_MOUSEMOTION:
-//                if (mouseLeft) {
-//                    sensor->flush();
-//                    int diff_x = -m_Event.motion.xrel;
-//                    int diff_y = -m_Event.motion.yrel;
-//                    diff_x = abs(diff_x) > 30 ? 30 * (abs(diff_x) / diff_x) : diff_x; //clamp
-//                    diff_y = abs(diff_y) > 30 ? 30 * (abs(diff_y) / diff_y) : diff_y; //clamp
-//                    cam->rotate(diff_x, diff_y);
-//                }
-//                break;
+            case SDL_MOUSEMOTION:
+                if (mouseLeft) {
+                    sensor->flush();
+                    int diff_x = -m_Event.motion.xrel;
+                    int diff_y = -m_Event.motion.yrel;
+                    diff_x = abs(diff_x) > 30 ? 30 * (abs(diff_x) / diff_x) : diff_x; //clamp
+                    diff_y = abs(diff_y) > 30 ? 30 * (abs(diff_y) / diff_y) : diff_y; //clamp
+                    camera->rotate(diff_x, diff_y);
+                }
+                break;
 
-//            case SDL_MOUSEBUTTONDOWN:
-//                if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(1)) {
-//                    mouseLeft = true;
-//                }
-//
-//
-//                if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(3)) {
-//
+            case SDL_MOUSEBUTTONDOWN:
+                if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(1)) {
+                    mouseLeft = true;
+                }
+
+                if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(3)) {
 //                    if (keysHeld[SDLK_LSHIFT]) {
 //
 //                        int x = ((int) m_Event.motion.x);
@@ -386,28 +574,28 @@ void SDLRenderCanvas::HandleEvents() {
 //                                    rTornado->pathtraceDL(ray, SPEresult, pathDepth, globalEnv);
 //                                    break;
 //                                case 4:
-//                                    cout << "no path construction from camera in lighttracer!" << endl;
+//                                    cout << "no path construction from camera in lighttracer!" << std::endl;
 //                                    break;
 //                                default:
 //                                    rTornado->rasterize(ray, SPEresult, globalEnv, 2, true);
 //                                    break;
-//                                    cout << "sampled p: " << SPEresult << "at lambda: 555nm" << endl;
+//                                    cout << "sampled p: " << SPEresult << "at lambda: 555nm" << std::endl;
 //                            }
 //                        }
-//                        cout << "clicked at pixel x: " << x << " y: " << y << endl;
+//                        cout << "clicked at pixel x: " << x << " y: " << y << std::endl;
 //
 //                    }
-//
-//                    else {
-//                        Vector3 &ref = (*image)[xres * (int) m_Event.motion.y + (int) m_Event.motion.x];
-//                        cout << "pixel color: R " << ref[0] << " | G " << ref[1] << " | B " << ref[2] << endl;
-//                    }
-//                }
-//                break;
 
-//            case SDL_MOUSEBUTTONUP:
-//                mouseLeft = false;
-//                break;
+                    //else {
+                        Vector3 &ref = (*rgbImage)[xres * (int) m_Event.motion.y + (int) m_Event.motion.x];
+                        std::cout << "pixel color: R " << ref[0] << " | G " << ref[1] << " | B " << ref[2] << std::endl;
+                    //}
+                }
+                break;
+
+            case SDL_MOUSEBUTTONUP:
+                mouseLeft = false;
+                break;
 
             default:
                 break;
@@ -417,39 +605,39 @@ void SDLRenderCanvas::HandleEvents() {
     float stepsize = keysHeld[SDLK_LSHIFT] ? MOVEINTERVAL2 : MOVEINTERVAL;
     stepsize = keysHeld[SDLK_LCTRL] ? MOVEINTERVAL3 : stepsize;
 
-//    if (keysHeld[SDLK_UP]) {
-//        movement[2] -= stepsize;
-//        sensor->flush();
-//    }
-//    if (keysHeld[SDLK_DOWN]) {
-//        movement[2] += stepsize;
-//        sensor->flush();
-//    }
-//    if (keysHeld[SDLK_LEFT]) {
-//        movement[0] -= stepsize;
-//        sensor->flush();
-//    }
-//    if (keysHeld[SDLK_RIGHT]) {
-//        movement[0] += stepsize;
-//        sensor->flush();
-//    }
-//    if (keysHeld[SDLK_PAGEUP]) {
-//        movement[1] += stepsize;
-//        sensor->flush();
-//    }
-//    if (keysHeld[SDLK_PAGEDOWN]) {
-//        movement[1] -= stepsize;
-//        sensor->flush();
-//    }
-//
-//    cam->move(movement);
+    if (keysHeld[SDLK_UP]) {
+        movement[2] -= stepsize;
+        sensor->flush();
+    }
+    if (keysHeld[SDLK_DOWN]) {
+        movement[2] += stepsize;
+        sensor->flush();
+    }
+    if (keysHeld[SDLK_LEFT]) {
+        movement[0] -= stepsize;
+        sensor->flush();
+    }
+    if (keysHeld[SDLK_RIGHT]) {
+        movement[0] += stepsize;
+        sensor->flush();
+    }
+    if (keysHeld[SDLK_PAGEUP]) {
+        movement[1] += stepsize;
+        sensor->flush();
+    }
+    if (keysHeld[SDLK_PAGEDOWN]) {
+        movement[1] -= stepsize;
+        sensor->flush();
+    }
+
+    camera->move(movement);
     movement = Vector3(0, 0, 0);
 }
 
 
 int main(int argc, char **argv) {
 
-    Sampler* globalSampler = new Sampler();
+    Sampler *globalSampler = new Sampler();
     globalSampler->init(13499);
 
     /*read input*/
@@ -465,36 +653,26 @@ int main(int argc, char **argv) {
     scene->setupAccStruct(heuristic, 0);
 
     /*Camera Setup*/
-    //thCam = new ThinLensCamera(sceneName,xres,yres,sensitivity);
-    //thCam->setStop((thCam->focalDist/2.8)*0.5f);
-
+    camera = new ThinLensCamera(sceneName, xres, yres, sensitivity);
+    camera->setStop((camera->focalDist / 2.8) * 0.5f);
+    sensor = new AccumulationBuffer(xres, yres);
 
     /*Kernel Setup*/
     // TODO
 
-    #ifndef NO_SDL
+#ifndef NO_SDL
     /*SDL Setup*/
-    sdlImage = new Image(xres,yres);
-    sdlImage->pixels[2000] = Vector3(1.f,0.f,0.f);
-    SDLRenderCanvas canvas = SDLRenderCanvas(xres, yres + 80, false, true);
-    canvas.Initialize();
-    #endif
+    rgbImage = new Image(xres, yres);
+    rgbImage->pixels[2000] = Vector3(1.f, 0.f, 0.f);
+    canvas = new SDLRenderCanvas(xres, yres + 80, false, true);
+    canvas->Initialize();
+#endif
 
     /*Main loop*/
     while (!closeChroma) {
-        #ifndef NO_SDL
-        canvas.EnterRenderMode();
-        canvas.HandleEvents();
-
-        canvas.blitImage(*sdlImage);
-
-        canvas.renderString("text1", 0, yres + 19);
-        canvas.renderString("text2", 0, yres + 34);
-        canvas.renderString("text3", 0, yres + 49);
-        canvas.renderString("text4", 0, yres + 64);
-        canvas.renderString("text5", 0, yres + 79);
-        canvas.LeaveRenderMode("Chroma Renderer");
-        #endif
+#ifndef NO_SDL
+        SDLBlitAndHandle(*rgbImage);
+#endif
     }
 
     return 0;

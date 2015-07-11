@@ -3,6 +3,7 @@
 
 #include "Vector3.h"
 #include "Defines.h"
+#include "Sampler.h"
 
 class Primitive;
 
@@ -11,6 +12,28 @@ typedef struct{
     Vector3 center;
     float area;
 } Pupil;
+
+typedef struct{
+    int rayCount;
+    int visCount;
+    int avgDepth;
+    int avglensDepth;
+    int lensRayCount;
+    int diffracted;
+    int lensBodyHitCount;
+    int innerReflectionCount;
+    int positives;
+    int negatives;
+    float debugLambda;
+    unsigned int LensTraceTime;
+    unsigned int RenderTime;
+    unsigned int TotalTime;
+    unsigned int TraversalTime;
+    unsigned int ShadingTime;
+    unsigned char debugColorFlag;
+    Sampler sampler;
+
+} ThreadEnv;
 
 typedef struct{
     Vector3 position;
