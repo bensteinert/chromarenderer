@@ -28,9 +28,9 @@ public:
 
     Vector3 L1NormRGB() const;
 
-    void inline convertXYZtoRGB(Image &dest_img);
+    void convertXYZtoRGB(Image &dest_img);
 
-    void inline clear();
+    void clear();
 
 
     friend inline Image *operator+(const Image &lhs, const Image &rhs) {

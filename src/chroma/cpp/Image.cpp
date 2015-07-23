@@ -133,16 +133,15 @@ Vector3 Image::L1NormRGB() const {
 }
 
 
-void inline Image::convertXYZtoRGB(Image &dest_img) {
+void Image::convertXYZtoRGB(Image &dest_img) {
     for (int i = 0; i < width * height; i++) {
         xyz_to_rgb(pixels[i].data, dest_img.pixels[i].data);
         dest_img.pixels[i].clampNegative();
         //pixels[i].clamp();
-
     }
 }
 
 
-void inline Image::clear() {
+void Image::clear() {
     memset(pixels, 0, width * height * sizeof(Vector3));
 }

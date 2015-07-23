@@ -8,6 +8,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fstream>
+#include <Renderer.h>
+#include <Structs.h>
 
 #include "SDLRenderCanvas.h"
 #include "Sampler.h"
@@ -15,6 +17,7 @@
 #include "Chroma.h"
 #include "Scene.h"
 #include "AccumulationBuffer.h"
+#include "ChromaCIE.h"
 
 
 //*******************
@@ -39,6 +42,7 @@ Scene *scene = 0;
 Camera *camera = 0;
 AccumulationBuffer *sensor = 0;
 SDLRenderCanvas *canvas = 0;
+Sampler *globalSampler;
 
 std::string sceneName = "";
 std::string lensName = "";
@@ -587,8 +591,8 @@ void SDLRenderCanvas::HandleEvents() {
 //                    }
 
                     //else {
-                        Vector3 &ref = (*rgbImage)[xres * (int) m_Event.motion.y + (int) m_Event.motion.x];
-                        std::cout << "pixel color: R " << ref[0] << " | G " << ref[1] << " | B " << ref[2] << std::endl;
+                    Vector3 &ref = (*rgbImage)[xres * (int) m_Event.motion.y + (int) m_Event.motion.x];
+                    std::cout << "pixel color: R " << ref[0] << " | G " << ref[1] << " | B " << ref[2] << std::endl;
                     //}
                 }
                 break;
@@ -637,7 +641,7 @@ void SDLRenderCanvas::HandleEvents() {
 
 int main(int argc, char **argv) {
 
-    Sampler *globalSampler = new Sampler();
+    globalSampler = new Sampler();
     globalSampler->init(13499);
 
     /*read input*/
@@ -658,7 +662,11 @@ int main(int argc, char **argv) {
     sensor = new AccumulationBuffer(xres, yres);
 
     /*Kernel Setup*/
-    // TODO
+    Renderer *renderer = new Renderer(scene, camera);
+
+    // Global for the moment...
+    ThreadEnv tEnv;
+    tEnv.sampler = *globalSampler;
 
 #ifndef NO_SDL
     /*SDL Setup*/
@@ -670,6 +678,37 @@ int main(int argc, char **argv) {
 
     /*Main loop*/
     while (!closeChroma) {
+        int x, y;
+        int pos = 0;
+        Ray ray;
+        float result;
+        float pathWeight;
+        int saveLimit=1000;
+
+        for (y = 0; y < yres; y++) {
+            for (x = 0; x < xres; x++) {
+                pos = camera->getRay(x, y, ray, pathWeight, tEnv);
+                if (pos > -1) {
+                    result = 0.0f;
+                    renderer->rasterize(ray, result, tEnv, 2);
+                    pathWeight *= 0.01f;
+                    Vector3 xyzColor;
+                    spectrum_p_to_xyz(ray.lambda, result, xyzColor.data);
+                    sensor->accumulateGlobal((xyzColor * pathWeight), pos);    //not sure...
+                }//ray gen
+            } //x
+        }//y
+
+        if (fpsMeter() > 1.0f) {
+            sensor->convertXYZtoRGB(*rgbImage);
+        }
+
+        /********screenshot?**********/
+        if (sensor->acc >= saveLimit) {
+            hdrScreenShot(*rgbImage);
+            saveLimit += 1000;
+        }
+
 #ifndef NO_SDL
         SDLBlitAndHandle(*rgbImage);
 #endif

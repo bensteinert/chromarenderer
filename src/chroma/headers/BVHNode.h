@@ -1,6 +1,7 @@
 #ifndef BVHNODE_H_
 #define BVHNODE_H_
 
+#include "Defines.h"
 #include "Vector3.h"
 #include "BoundingBox.h"
 
@@ -18,6 +19,6 @@ public:
     BVHNode(const Vector3 &pMin_in, const Vector3 &pMax_in);
 
     ~BVHNode();
-} __attribute__ ((aligned (16)));
+}; //TODO fix to be 16byte aligned again!
 
 #endif
