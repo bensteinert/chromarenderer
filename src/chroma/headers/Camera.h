@@ -54,6 +54,9 @@ public:
 
     virtual void stats(char *text1, char *text2, char *text3, char *text4, char *text5, const int length) = 0;
 
+    /**
+     * Accepts a distance in mm to focus on.
+     */
     virtual void focus(float dist) = 0;
 
     virtual void zoomRel(float mult) = 0;
@@ -64,7 +67,7 @@ public:
 
     virtual void stopDown() = 0;
 
-    virtual void setStop(const float apertureRadius) = 0;
+    virtual void setStopNumber(const float apertureRadius) = 0;
 
     void rotate(const int &deg_x, const int &deg_y);
 

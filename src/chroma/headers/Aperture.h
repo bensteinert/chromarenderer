@@ -35,7 +35,6 @@ public:
 
     float intersectRay(const Ray *ray, float &u, float &v) const;
 
-
     void init(int numBlades, const Vector3 &center_in, float radius_in);
 
     int intersectRay(const Ray *ray, Hitpoint &hit) const;
@@ -66,26 +65,7 @@ public:
 
     void stopDown();
 
-
-    inline void scaleToRadius(float rad) {
-        if (circular) circAP.scaleToRadius(rad);
-        else {
-            float scale = rad / radius;    ///radius for normalizing * scale for transformation
-            for (int i = 0; i < numTris; i++) {
-                tris[i].p0 = (tris[i].p0 - center) * scale + center;
-                tris[i].p1 = (tris[i].p1 - center) * scale + center;
-                tris[i].p2 = (tris[i].p2 - center) * scale + center;
-            }
-        }
-
-        radius = rad;
-        area = getArea();
-    }
-
-
-    inline void integrityCheck() const {
-        assert(objectID == APID);
-    }
+    void scaleToRadius(float rad);
 
 
 private:

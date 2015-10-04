@@ -36,16 +36,14 @@ int ThinLensCamera::getRay(const float x, const float y, Ray &ray, float &Lweigh
     float cos_theta = -principalDir[2];
     int arrayPos = y * xRes + x;
     float AAG = sensorArea;
-    float g =
-            (sensorZPos * focalDist) / (focalDist - sensorZPos);        // construct focalPoint at g through lens center
+    float g = (sensorZPos * focalDist) / (focalDist - sensorZPos);       // construct focalPoint at g through lens center
     Vector3 focalPointObjectside = principalDir * (-g / cos_theta);
     Vector3 lensSample;
-    float inv_pd = getLensSampleLocal(sb.sampler, lensSample);                    //mm²
+    float inv_pd = getLensSampleLocal(sb.sampler, lensSample);           //mm²
     Vector3 dirToLens = (lensSample - pixelPos).normalizedCopy();
     Vector3 localDir = (focalPointObjectside - lensSample).normalizedCopy();
     float cos4 = powf(dirToLens[2], 4.0f);
 
-    // todo: start with Bayer Pattern here?
     ray = rayInWorldCoords(lensSample, localDir, spectrum_sample(sb.sampler.genrand_real2()));    
     AAG = AAG * inv_pd * (cos4 / (sensorZPos * sensorZPos));
 
@@ -108,35 +106,35 @@ int ThinLensCamera::evaluateRay(const Hitpoint &lensHit, Ray &lensRay, const flo
     return 0;
 }
 
-
 void ThinLensCamera::focus(float focalPlane) {
     sensorZPos = (focalDist * focalPlane) / (focalPlane - focalDist);
 }
 
 
+// Decreases f-number, increases diameter ... hmhm
 void ThinLensCamera::stopUp() {
-    ap.stopUp();
-    updateSampler();
+    setStopNumber(stopNumber / SQRT2);
 }
 
-
+// Increases f-number, decrease diameter ... yes it is confusing ;)
 void ThinLensCamera::stopDown() {
-    ap.stopDown();
-    updateSampler();
+    setStopNumber(stopNumber * SQRT2);
 }
 
-
-void ThinLensCamera::setStop(const float apertureRadius) {
-    ap.scaleAbs(apertureRadius);
+// Never forget: WIKIPEDIA: If a lens's focal length is 10 mm and its entrance pupil diameter is 5 mm,
+// the f-number N is 2 and the aperture diameter is f/2. N = f/D -> pupilRadius = (f/N)/2
+void ThinLensCamera::setStopNumber(const float newStopNumber) {
+    ap.scaleAbs((focalDist / newStopNumber) * 0.5f);
+    stopNumber = newStopNumber;
     updateSampler();
 }
 
 
 void ThinLensCamera::stats(char *text1, char *text2, char *text3, char *text4, char *text5, const int length) {
     snprintf(text1, 64, "focal length: %.1f mm", focalDist);
+    snprintf(text3, 64, "aperture: rad: %.2fmm f/%.1f", ap.radius, stopNumber);
     snprintf(text2, 64, "sensor shift: %.4f mm", sensorZPos);
-    snprintf(text3, 64, "aperture radius: %.2f mm", ap.radius);
-    snprintf(text4, 64, "Sensitivity: %.2f mm", sensitivity);
+    snprintf(text4, 64, "Sensitivity: %.2f", sensitivity);
 }
 
 

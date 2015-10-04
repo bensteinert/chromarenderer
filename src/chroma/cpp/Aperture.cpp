@@ -313,7 +313,9 @@ void Aperture::shift(const Vector3 &v) {
 
 void Aperture::scaleRel(float scale) {
 
-    if (circular) circAP.scaleRel(scale);
+    if (circular) {
+        circAP.scaleRel(scale);
+    }
     else {
         for (int i = 0; i < numTris; i++) {
             tris[i].p0 *= scale;
@@ -329,7 +331,6 @@ void Aperture::scaleRel(float scale) {
 
 
 void Aperture::scaleAbs(float val) {
-
     float scale = val / radius;    // /radius for normalizing * scale for transformation
     scaleRel(scale);
 }
@@ -342,4 +343,22 @@ void Aperture::stopUp() {
 
 void Aperture::stopDown() {
     scaleToRadius(radius * SQRT2);
+}
+
+
+void inline Aperture::scaleToRadius(float rad) {
+    if (circular) {
+        circAP.scaleToRadius(rad);
+    }
+    else {
+        float scale = rad / radius;    ///radius for normalizing * scale for transformation
+        for (int i = 0; i < numTris; i++) {
+            tris[i].p0 = (tris[i].p0 - center) * scale + center;
+            tris[i].p1 = (tris[i].p1 - center) * scale + center;
+            tris[i].p2 = (tris[i].p2 - center) * scale + center;
+        }
+    }
+
+    radius = rad;
+    area = getArea();
 }

@@ -320,6 +320,19 @@ void parseArgs(int argc, char **argv) {
     }
 }
 
+// focus to distance of hit geometry in the centre of the image
+void autoFocus(){
+    Vector3 viewDir = camera->dirInWorldCoords(Vector3(0, 0, -1));
+    Ray ray = Ray(camera->pos + viewDir * 0.1f, viewDir, 0.0f, FLT_MAX, 555);
+    Hitpoint p;
+
+    scene->aStruct->intersect(ray, p);
+    if (p.hit) {
+        camera->focus(p.dist * 1000.0f);
+    }
+    sensor->clear();
+}
+
 
 void SDLRenderCanvas::HandleEvents() {
 
@@ -532,10 +545,9 @@ void SDLRenderCanvas::HandleEvents() {
 //                            realCam->switchToPupilMode();
 //                        }
 //                        break;
-//                    case SDLK_F9: {
-//                        autofocus();
-//                        break;
-//                    }
+                    case SDLK_F9: {
+                        autoFocus();
+                    }
 
                     default:
                         break;
@@ -647,8 +659,8 @@ int main(int argc, char **argv) {
     /*read input*/
     sceneName = "cornelldiamond";
 
-    xres = 1600;
-    yres = 1050;
+    xres = 1200;
+    yres = 900;
 
     parseArgs(argc, argv);
 
@@ -658,7 +670,7 @@ int main(int argc, char **argv) {
 
     /*Camera Setup*/
     camera = new ThinLensCamera(sceneName, xres, yres, sensitivity);
-    camera->setStop((camera->focalDist / 2.8) * 0.5f);
+    camera->setStopNumber(2.8);
     sensor = new AccumulationBuffer(xres, yres);
 
     /*Kernel Setup*/
@@ -683,7 +695,7 @@ int main(int argc, char **argv) {
         Ray ray;
         float result;
         float pathWeight;
-        int saveLimit=1000;
+        int saveLimit = 1000;
 
         for (y = 0; y < yres; y++) {
             for (x = 0; x < xres; x++) {

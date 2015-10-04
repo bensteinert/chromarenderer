@@ -17,6 +17,7 @@ class ThinLensCamera : public Camera {
 public:
 
     Aperture ap;
+    float stopNumber;
 
     ThinLensCamera(const string &filename, const int xres, const int yres, float sensitivity_in);
 
@@ -42,7 +43,7 @@ public:
 
     void stopDown();
 
-    void setStop(const float apertureRadius);
+    void setStopNumber(const float stopNumber);
 
     void * operator new(size_t bytes);
 
