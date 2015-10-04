@@ -8,6 +8,7 @@
 #include "NextEventEstimatorLight.h"
 #include "Hitpoint.h"
 #include "Sampler.h"
+#include "Chroma.h"
 
 
 NextEventEstimatorLight::NextEventEstimatorLight(std::vector<Primitive *> ls) :
@@ -20,10 +21,10 @@ NextEventEstimatorLight::NextEventEstimatorLight(std::vector<Primitive *> ls) :
     if (nrPrimitives == 0) {
         std::cout << "No light sources! You cant use DL estimation!";
         //TODO MIGRATION: indicator for DL possibility still needed?
-        //DL = false;
+        DL = false;
     }
     else {
-        //DL = true;
+        DL = true;
         std::cout << "Lights cool, DL possible" << std::endl;
         primitives = new Primitive *[nrPrimitives];
         cumDistributions = new float[nrPrimitives];

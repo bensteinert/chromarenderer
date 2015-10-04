@@ -28,6 +28,8 @@ public:
     float B1, B2, B3, C1, C2, C3;
     char name[16];
 
+    float SPEgetLe(const Hitpoint &hit, const float lambda) const;
+
 public:
     Material();
 
@@ -57,8 +59,6 @@ private:
     Vector3 RGBgetSpecRefl(const Hitpoint &hit) const;
 
     float SPEgetSpecRefl(const Hitpoint &hit, const float lambda) const;
-
-    float SPEgetLe(const Hitpoint &hit, const float lambda) const;
 
     Vector3 RGBgetTransmission(const float dist) const;
 

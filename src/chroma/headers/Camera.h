@@ -27,6 +27,7 @@ public:
     float sensitivity;
     float sensorZPos;            // local Z shift of sensor in mm!
     float focalDist;
+    float stopNumber;
 
 
     const int xRes;
@@ -78,6 +79,8 @@ public:
     void superSample(const float scaling);
 
     Vector3 getPixelCoord(const float x, const float y, const float shift_x, const float shift_y);
+
+    void lensContribution(bool contributes);
 
     void zShift(float z);
 

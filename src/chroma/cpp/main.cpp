@@ -10,6 +10,7 @@
 #include <fstream>
 #include <Renderer.h>
 #include <Structs.h>
+#include "PathTracer.h"
 
 #include "SDLRenderCanvas.h"
 #include "Sampler.h"
@@ -26,6 +27,7 @@ Image *rgbImage;
 bool stop = false;
 bool closeChroma = false;
 bool pupilMode = false;
+
 int method = 1; // numbered by F-keys
 int camType = 1;
 
@@ -43,6 +45,8 @@ Camera *camera = 0;
 AccumulationBuffer *sensor = 0;
 SDLRenderCanvas *canvas = 0;
 Sampler *globalSampler;
+Renderer *rasterizer = 0;
+PathTracer *pathtracer = 0;
 
 std::string sceneName = "";
 std::string lensName = "";
@@ -210,7 +214,51 @@ inline void camStats() {
 inline void renderStats(double inv_elapsed_t) {
     //snprintf(text1, 64, "rays/sec:   %.1f", globalEnv.rayCount * inv_elapsed_t);
     //snprintf(text2, 64, "visTests/sec:   %.1f", globalEnv.visCount * inv_elapsed_t);
+    snprintf(text3, 64, "Remder Mode: %s ", method == 1 ? "Rasterize" : (method == 2 ? "PathTracer" : (method == 3 ? "PathTracer+DLE" : "")));
     snprintf(text4, 64, "L1: %.4f", rgbImage->L1Norm());
+}
+
+void switchRender(int renderMode){
+    switch (renderMode){
+        case 2:
+            scene->lightsImportance(true);
+            camera->lensContribution(false);
+            scene->setupAccStruct(heuristic); //TODO: check whether needed...
+            method = renderMode;
+            break;
+        case 3:
+            if(!DL){
+                cout << "no light sources for DL! You can use that mode" << endl;
+                switchRender(1);
+                break;
+            }
+
+            scene->lightsImportance(true);
+            camera->lensContribution(false);
+            break;
+        case 4:
+            if(!DL){
+                cout << "no light sources for DL! You can use that mode" << endl;
+                switchRender(1);
+                break;
+            }
+
+            scene->lightsImportance(false);
+            camera->lensContribution(true);
+            //camera->updateSampler(); // move method to Camera interface, currently at ThinLensCamera.
+            break;
+
+        default:
+            method = 1;
+            break;
+    }
+
+    scene->setupAccStruct(heuristic);
+    pathtracer->refreshAStruct(scene->aStruct);
+    rasterizer->refreshAStruct(scene->aStruct);
+    //candLe->refreshAStruct(scene->aStruct);
+    sensor->clear();
+    stop = false;
 }
 
 
@@ -259,7 +307,7 @@ inline void SDLBlitAndHandle(const Image &img) {
 
 
 void writeCommands() {
-    printf("F1: rasterize || F2: PT || F3: PTDL || F4:LTDL || F12: Spectral/RGB\n"
+    printf("F1: rasterize || F2: PT || F3: PTDL || F4:LTDL\n"
                    "q/a: Stop Up/Down\n"
                    "w/s: shift sensor backward(+z) / forward\n"
                    "e/d: increase/decrease EV\n"
@@ -406,10 +454,10 @@ void SDLRenderCanvas::HandleEvents() {
 
 
                     case SDLK_F1:
-                        //switchRender(1);
+                        switchRender(1);
                         break;
                     case SDLK_F2:
-                        //switchRender(2);
+                        switchRender(2);
                         break;
                     case SDLK_F3:
                         //switchRender(3);
@@ -584,10 +632,10 @@ void SDLRenderCanvas::HandleEvents() {
 //
 //                            switch (method) {
 //                                case 2:
-//                                    rTornado->pathtrace(ray, SPEresult, pathDepth, globalEnv);
+//                                    rTornado->pathTrace(ray, SPEresult, pathDepth, globalEnv);
 //                                    break;
 //                                case 3:
-//                                    rTornado->pathtraceDL(ray, SPEresult, pathDepth, globalEnv);
+//                                    rTornado->pathTraceDL(ray, SPEresult, pathDepth, globalEnv);
 //                                    break;
 //                                case 4:
 //                                    cout << "no path construction from camera in lighttracer!" << std::endl;
@@ -674,7 +722,9 @@ int main(int argc, char **argv) {
     sensor = new AccumulationBuffer(xres, yres);
 
     /*Kernel Setup*/
-    Renderer *renderer = new Renderer(scene, camera);
+    rasterizer = new Renderer(scene, camera);
+    pathtracer = new PathTracer(scene, camera);
+
 
     // Global for the moment...
     ThreadEnv tEnv;
@@ -683,11 +733,11 @@ int main(int argc, char **argv) {
 #ifndef NO_SDL
     /*SDL Setup*/
     rgbImage = new Image(xres, yres);
-    rgbImage->pixels[2000] = Vector3(1.f, 0.f, 0.f);
     canvas = new SDLRenderCanvas(xres, yres + 80, false, true);
     canvas->Initialize();
 #endif
 
+    writeCommands();
     /*Main loop*/
     while (!closeChroma) {
         int x, y;
@@ -695,6 +745,7 @@ int main(int argc, char **argv) {
         Ray ray;
         float result;
         float pathWeight;
+        int maxPathDepth = 12;
         int saveLimit = 1000;
 
         for (y = 0; y < yres; y++) {
@@ -702,7 +753,18 @@ int main(int argc, char **argv) {
                 pos = camera->getRay(x, y, ray, pathWeight, tEnv);
                 if (pos > -1) {
                     result = 0.0f;
-                    renderer->rasterize(ray, result, tEnv, 2);
+                    switch (method) {
+                        case 2:
+                            pathtracer->pathTrace(ray, result, maxPathDepth, tEnv);
+                            break;
+                        case 3:
+                            pathtracer->pathTraceDL(ray, result, maxPathDepth, tEnv);
+                            break;
+                        case 1:
+                        default:
+                            rasterizer->rasterize(ray, result, tEnv, 2, false);
+                            break;
+                    }
                     pathWeight *= 0.01f;
                     Vector3 xyzColor;
                     spectrum_p_to_xyz(ray.lambda, result, xyzColor.data);

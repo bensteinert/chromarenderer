@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "Material.h"
 #include "Chroma.h"
 
 
@@ -196,7 +197,11 @@ std::ostream &operator<<(std::ostream &os, const Camera &camera) {
     os << "EFL:\t\t\t" << camera.focalDist << "mm" << endl;
     os << "Lens-Sensor distance:\t" << camera.sensorZPos << "mm" << endl;
     os << "Sensitivity:\t\t" << camera.sensitivity << endl;
-    //os << "F-number:\t\t" << camera.focalDist/(camera.ap.radius*2);
-
+    os << "F-number:\t\t" << camera.stopNumber;
     return os;
+}
+
+
+void Camera::lensContribution(bool contributes) {
+    lensSampler->insideMat->contribution = contributes;
 }

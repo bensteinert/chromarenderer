@@ -100,7 +100,6 @@ void Scene::createEventEstimator() {
 
 
 void Scene::lightsImportance(bool contrib) {
-
     for (int i = 0; i < nummats; i++) {
         Material &matptr = materials[i];
         if (matptr.powerEmitting > 0.0f) {

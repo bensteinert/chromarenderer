@@ -47,6 +47,11 @@ public:
 
     void clear();
 
+    const Material * getToMaterial() const;
+
+    const Material * getFromMaterial() const;
+
+    void clearAll();
 };
 
 #endif

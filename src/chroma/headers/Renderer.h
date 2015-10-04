@@ -19,9 +19,10 @@ public:
     const Scene *scene;
     Camera *cam;
 
-    //BlinnPhong bp;
-    //Dielectric gs;
-    //Shader **shaders;
+    // GOON HERE:
+    BlinnPhong bp;
+    Dielectric gs;
+    Shader **shaders;
 
     Renderer(const Scene *scene, Camera *cam_in);
 
@@ -29,13 +30,14 @@ public:
 
     void reinit(const Scene *scene_in);
 
+    // TODO: refactor out to Rasterizer Impl
     void rasterize(Ray &ray, float &result, ThreadEnv &sb, int mode = 0, bool verbose = false) const;
 
 
     inline void refreshAStruct(const AccStruct *newStruct) {
         aStruct = newStruct;
-        //bp.aStruct = newStruct;
-        //gs.aStruct = newStruct;
+        bp.aStruct = newStruct;
+        gs.aStruct = newStruct;
     }
 
 

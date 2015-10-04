@@ -13,6 +13,7 @@ extern Material stdNull;
 extern Material stdAir;
 extern Material lightSensing;
 
+bool DL = true;
 extern Sampler* globalSampler;
 
 static const char scene_path[] = "./scenes/";
