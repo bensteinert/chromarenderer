@@ -7,6 +7,9 @@ model {
                 if (toolChain in Gcc) {
                     cppCompiler.args "-O3", "-march=native", "-Wa,-q"
                 }
+                if (toolChain in Clang) {
+                    cppCompiler.args "-O3", "-march=native"
+                }
             }
         }
     }
