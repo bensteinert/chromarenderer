@@ -1,28 +1,28 @@
 apply plugin: 'cpp'
 
 model {
-    components {
-        // TODO merge components settings
-        // TODO Reimplement to have library-only assembly
-        // chromalib(NativeLibrarySpec) {
-        //     binaries.all {
-        //         linker.args '-L/usr/local/lib', '-lSDLmain', '-lSDL', '-Wl,-framework,Cocoa'
-        //         if (toolChain in Gcc) {
-        //             cppCompiler.args "-O3", "-march=native", "-Wa,-q"
-        //         }
-        //     }
-        // }
-        chroma(NativeExecutableSpec) {
-            binaries.all {
-                linker.args '-L/usr/local/lib', '-lSDLmain', '-lSDL', '-Wl,-framework,Cocoa'
-                if (toolChain in Gcc) {
-                    //if (buildType == buildTypes.debug) {
-                    //    cppCompiler.args '-g', '-O0', '-std=c++11'
-                    //} else {
-                        cppCompiler.args "-O3", "-march=native", "-Wa,-q", '-std=c++11'
-                    //}
-                }
+    binaries {
+        all {
+            cppCompiler.args "-O3", "-march=native", "-I/usr/local/include"//, "-std=c++11"
+            linker.args '-L/usr/local/lib', '-lSDLmain', '-lSDL', '-Wl,-framework,Cocoa'
+
+            if (toolChain in Gcc) {
+                cppCompiler.args "-Wa,-q"
+            }
+            if (toolChain in Clang) {
             }
         }
     }
+
+    components {
+        chroma(NativeLibrarySpec) {
+        }
+        // TODO: Seems like I can't build an exec from a library. Really?
+//        chromarenderer(NativeExecutableSpec) {
+//            binaries.all {
+//                lib library: 'chroma', linkage: 'static'
+//            }
+//        }
+    }
 }
+

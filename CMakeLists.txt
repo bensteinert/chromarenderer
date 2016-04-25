@@ -10,7 +10,6 @@ FIND_PACKAGE(Boost 1.36.0 REQUIRED)
 INCLUDE_DIRECTORIES(${SDL_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(src/chroma/headers)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native")
 SET(SOURCE_FILES
     src/chroma/cpp/tga.cpp
     src/chroma/cpp/rgbe.cpp
