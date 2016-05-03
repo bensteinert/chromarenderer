@@ -40,4 +40,4 @@ SET(SOURCE_FILES
     )
 
 ADD_LIBRARY(chroma2-lib ${SOURCE_FILES})
-ADD_EXECUTABLE (chroma2 ${SOURCE_FILES} src/chroma/cpp/main.cpp)
+#ADD_EXECUTABLE (chroma2 ${SOURCE_FILES} src/chroma/cpp/main.cpp)
