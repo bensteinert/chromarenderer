@@ -11,6 +11,9 @@
 
 Sampler::Sampler() { }
 
+Sampler::Sampler(long seed) {
+    init(seed);
+}
 
 Sampler::~Sampler() { }
 
@@ -124,7 +127,7 @@ Vector3 Sampler::get_cosdistr_LobeSample(Vector3 &dir, int n) {
 
 
 Vector3 Sampler::get_spec_AshiSample(const Hitpoint &hit, const Vector3 &inv_out_dir, const int &n_u, const int &n_v,
-                                   Vector3 &halfVector, double &inv_pd) {
+                                     Vector3 &halfVector, double &inv_pd) {
     //inv_out_dir shows in direction of hitpoint!
 
     retry:

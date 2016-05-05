@@ -17,6 +17,8 @@ public:
 
     Sampler();
 
+    Sampler(long seed);
+
     ~Sampler();
 
     void init(unsigned long seed);
