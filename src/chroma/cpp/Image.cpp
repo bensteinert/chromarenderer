@@ -21,8 +21,8 @@ Image::Image(const char path[]) : width(0), height(0), pixels(0) {
 }
 
 
-Image::Image(int width_in, int height_in) :
-        width(0), height(0), pixels(0) {
+Image::Image(int width_in, int height_in) : width(0), height(0), pixels(0) {
+
     pixels = (Vector3 *) _mm_malloc(width_in * height_in * sizeof(Vector3), 16);
     width = width_in;
     height = height_in;
@@ -31,7 +31,7 @@ Image::Image(int width_in, int height_in) :
 
 
 Image::~Image() {
-    delete[] pixels;
+    _mm_free(pixels);
 }
 
 

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(chroma2Cpp)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -mfpmath=sse")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -mfpmath=sse -std=c++11")
 SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -lSDLmain -lSDL -framework Cocoa" )
 
 INCLUDE(FindPkgConfig)
@@ -40,4 +40,4 @@ SET(SOURCE_FILES
     )
 
 ADD_LIBRARY(chroma2-lib ${SOURCE_FILES})
-#ADD_EXECUTABLE (chroma2 ${SOURCE_FILES} src/chroma/cpp/main.cpp)
+ADD_EXECUTABLE (chroma2 ${SOURCE_FILES} src/chroma/cpp/main.cpp)

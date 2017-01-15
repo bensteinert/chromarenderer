@@ -40,7 +40,7 @@ public:
     }
 
 
-    inline void operator+=(const AccumulationBuffer &acc2) {
+    inline void operator+=(const Image &acc2) {
 
         assert(width == acc2.width && height == acc2.height);
         for (int i = 0; i < width * height; i++) {
@@ -49,7 +49,7 @@ public:
     }
 
 
-    inline void merge(const AccumulationBuffer &acc2) {
+    inline void merge(const Image &acc2) {
 
         for (int i = 0; i < width * height; i++)
             pixels[i] += acc2.pixels[i];

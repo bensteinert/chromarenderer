@@ -3,7 +3,7 @@ apply plugin: 'cpp'
 model {
     binaries {
         all {
-            cppCompiler.args "-O3", "-march=native", "-I/usr/local/include"//, "-std=c++11"
+            cppCompiler.args "-O3", "-march=native", "-I/usr/local/include", "-std=c++11"
             linker.args '-L/usr/local/lib', '-lSDLmain', '-lSDL', '-Wl,-framework,Cocoa'
 
             if (toolChain in Gcc) {
