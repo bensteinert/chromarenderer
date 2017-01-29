@@ -46,13 +46,15 @@ public:
         for (int i = 0; i < width * height; i++) {
             accumulateGlobal(acc2[i], i);
         }
+        acc++;
     }
 
 
     inline void merge(const Image &acc2) {
 
-        for (int i = 0; i < width * height; i++)
+        for (int i = 0; i < width * height; i++) {
             pixels[i] += acc2.pixels[i];
+        }
     }
 };
 
