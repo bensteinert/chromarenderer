@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(chroma2Cpp)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -mfpmath=sse -std=c++11")
-SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -lSDLmain -lSDL -framework Cocoa" )
-
 INCLUDE(FindPkgConfig)
 PKG_SEARCH_MODULE(SDL REQUIRED sdl)
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -mfpmath=sse -std=c++11")
+SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/lib -lSDLmain -lSDL -Wl,-framework,Cocoa" )
+
 FIND_PACKAGE(Boost 1.36.0 REQUIRED)
 INCLUDE_DIRECTORIES(${SDL_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(src/chroma/headers)
